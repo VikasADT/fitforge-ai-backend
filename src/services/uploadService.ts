@@ -10,7 +10,7 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const toPosixPath = (value: string) => value.replace(/\\/g, '/');
 
-export const optimizeAndStoreUpload = async (file: Express.Multer.File, userId: string) => {
+export const optimizeAndStoreUpload = async (file: any, userId: string) => {
   const optimizedFilename = `${crypto.randomUUID()}.webp`;
   const optimizedPath = path.join(uploadDir, optimizedFilename);
 
@@ -36,7 +36,7 @@ export const optimizeAndStoreUpload = async (file: Express.Multer.File, userId: 
   return uploadRecord;
 };
 
-export const optimizeAndStoreUploads = async (files: Express.Multer.File[], userId: string) => {
+export const optimizeAndStoreUploads = async (files: any[], userId: string) => {
   const uploads = [] as any[];
   for (const file of files) {
     const upload = await optimizeAndStoreUpload(file, userId);

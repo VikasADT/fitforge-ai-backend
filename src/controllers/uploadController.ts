@@ -15,7 +15,7 @@ export const uploadSingleFile = asyncHandler(async (req: AuthRequest, res: Respo
 
 export const uploadMultipleFiles = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.user) return fail(res, 'Unauthorized', 401);
-  const files = req.files as Express.Multer.File[] | undefined;
+  const files = req.files as any[] | undefined;
   if (!files || files.length === 0) return fail(res, 'No files uploaded', 400);
 
   const uploads = await uploadService.optimizeAndStoreUploads(files, req.user.id);

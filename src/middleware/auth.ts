@@ -5,6 +5,11 @@ import prisma from '../prisma/client';
 
 export interface AuthRequest extends Request {
   user?: { id: string; email: string };
+  body: any;
+  params: any;
+  headers: any;
+  file?: any;
+  files?: any;
 }
 
 interface TokenPayload {
