@@ -41,8 +41,8 @@ else
   git pull --ff-only
 fi
 
-echo "[${timestamp()}] Installing production dependencies"
-npm ci --production
+echo "[${timestamp()}] Installing dependencies"
+npm ci
 
 echo "[${timestamp()}] Generating Prisma client"
 npx prisma generate
