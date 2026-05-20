@@ -1,11 +1,22 @@
 import { Router } from 'express';
-import { createBusiness, getBusiness, updateBusiness, deleteBusiness } from '../controllers/businessController';
+import {
+  createBusiness,
+  getBusiness,
+  updateBusiness,
+  deleteBusiness,
+  getUserBusinesses
+} from '../controllers/businessController';
+
 import { authMiddleware } from '../middleware/auth';
 import { body } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
 
 const router = Router();
 
+// GET ALL USER BUSINESSES
+router.get('/', authMiddleware, getUserBusinesses);
+
+// CREATE BUSINESS
 router.post(
   '/create',
   authMiddleware,
@@ -23,8 +34,14 @@ router.post(
   validateRequest,
   createBusiness
 );
+
+// GET SINGLE BUSINESS
 router.get('/:id', authMiddleware, getBusiness);
+
+// UPDATE BUSINESS
 router.put('/:id', authMiddleware, updateBusiness);
+
+// DELETE BUSINESS
 router.delete('/:id', authMiddleware, deleteBusiness);
 
 export default router;

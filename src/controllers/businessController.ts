@@ -5,31 +5,39 @@ import { success, fail } from '../utils/response';
 import { AuthRequest } from '../middleware/auth';
 
 export const createBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const payload = req.body;
-  if (!req.user) return fail(res, 'Unauthorized', 401);
-  const userId = req.user.id;
-  const business = await businessService.createBusiness({ ...payload, userId });
-  return success(res, 'Business created successfully', business, 201);
+    const payload = req.body;
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const userId = req.user.id;
+    const business = await businessService.createBusiness({ ...payload, userId });
+    return success(res, 'Business created successfully', business, 201);
 });
+export const getUserBusinesses = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+        return fail(res, 'Unauthorized', 401);
+    }
 
+    const businesses = await businessService.getBusinessesByUser(req.user.id);
+
+    return success(res, 'Businesses fetched successfully', businesses);
+});
 export const getBusiness = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const business = await businessService.getBusinessById(id);
-  if (!business) return fail(res, 'Business not found', 404);
-  return success(res, 'Business fetched', business);
+    const { id } = req.params;
+    const business = await businessService.getBusinessById(id);
+    if (!business) return fail(res, 'Business not found', 404);
+    return success(res, 'Business fetched', business);
 });
 
 export const updateBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
-  if (!req.user) return fail(res, 'Unauthorized', 401);
-  const { id } = req.params;
-  const updated = await businessService.updateBusiness(id, req.body);
-  if (!updated) return fail(res, 'Business not found', 404);
-  return success(res, 'Business updated', updated);
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const updated = await businessService.updateBusiness(id, req.body);
+    if (!updated) return fail(res, 'Business not found', 404);
+    return success(res, 'Business updated', updated);
 });
 
 export const deleteBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
-  if (!req.user) return fail(res, 'Unauthorized', 401);
-  const { id } = req.params;
-  await businessService.deleteBusiness(id);
-  return success(res, 'Business deleted');
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    await businessService.deleteBusiness(id);
+    return success(res, 'Business deleted');
 });
