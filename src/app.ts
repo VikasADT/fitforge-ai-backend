@@ -24,10 +24,32 @@ app.use(rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 }));
-app.use(cors({
-  origin: [config.frontendUrl],
-  credentials: true
-}));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://fitforgeai.in',
+  'https://www.fitforgeai.in',
+  config.frontendUrl
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow non-browser requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
 app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev', { stream: loggerStream }));
 app.use(express.json({ limit: '10mb' }));
