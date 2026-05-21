@@ -33,23 +33,23 @@ router.post(
       .withMessage('businessName is required'),
 
     body('category')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('city')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('phone')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('logoUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL(),
 
     body('subdomain')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString()
       .trim()
       .toLowerCase()
@@ -60,15 +60,15 @@ router.post(
       ),
 
     body('templateId')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('themeColor')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('fontStyle')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString()
   ],
   validateRequest,
@@ -90,27 +90,27 @@ router.put(
   authMiddleware,
   [
     body('businessName')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('category')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('city')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('phone')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('logoUrl')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isURL(),
 
     body('subdomain')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString()
       .trim()
       .toLowerCase()
@@ -121,15 +121,15 @@ router.put(
       ),
 
     body('templateId')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('themeColor')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString(),
 
     body('fontStyle')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isString()
   ],
   validateRequest,
