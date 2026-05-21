@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { success, fail } from '../utils/response';
 import * as businessService from '../services/businessService';
+import * as mediaService from '../services/mediaService';
 
 export const getPublicWebsite = asyncHandler(async (req: Request, res: Response) => {
   const { subdomain } = req.params;
@@ -55,6 +56,8 @@ export const getPublicWebsite = asyncHandler(async (req: Request, res: Response)
     },
     ctaLabels: business.ctaLabels ?? null,
     websiteContent,
+    heroImage: (business as any).heroImageUrl ?? null,
+    media: await mediaService.getBusinessMedia(business.id),
     seoTitle: business.seoTitle ?? websiteContent.seoTitle,
     seoDescription: business.seoDescription ?? websiteContent.seoDescription,
     createdAt: business.createdAt,

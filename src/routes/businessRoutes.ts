@@ -14,6 +14,9 @@ import {
   getBusinessAnalyticsTrends,
   getBusinessActivity
 } from '../controllers/businessController';
+import { uploadBusinessMedia, listBusinessMedia } from '../controllers/mediaController';
+import { userUploadLimiter } from '../middleware/rateLimiter';
+import { uploadSingle } from '../middleware/upload';
 import {
   createMembership,
   deleteMembership,
@@ -250,6 +253,9 @@ router.get(
   validateRequest,
   getBusinessAnalytics
 );
+
+router.post('/:id/media', authMiddleware, userUploadLimiter, uploadSingle, uploadBusinessMedia);
+router.get('/:id/media', authMiddleware, listBusinessMedia);
 
 router.get('/:id/analytics/trends', authMiddleware, getBusinessAnalyticsTrends);
 

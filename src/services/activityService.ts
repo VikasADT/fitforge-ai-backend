@@ -1,18 +1,19 @@
 import prisma from '../prisma/client';
-import { Prisma, BusinessActivityType } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export type ActivityMetadata = Prisma.InputJsonValue;
 
 export const recordBusinessActivity = (
   businessId: string,
-  type: BusinessActivityType,
+  type: string,
   message?: string,
   metadata?: ActivityMetadata
 ) => {
   return prisma.businessActivity.create({
     data: {
       businessId,
-      type,
+      // allow string to be passed for newly-added enum values until Prisma client is regenerated
+      type: type as any,
       message,
       metadata
     }

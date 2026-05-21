@@ -64,7 +64,17 @@ export const updateBusiness = asyncHandler(async (req: AuthRequest, res: Respons
     try {
         const updated = await businessService.updateBusiness(id, req.user.id, req.body);
         if (!updated) return fail(res, 'Business not found', 404);
-        return success(res, 'Business updated', updated);
+                // record activity for website updates and branding changes
+                const meta: any = { fields: Object.keys(req.body) };
+                await activityService.recordBusinessActivity(id, 'WEBSITE_UPDATED', 'Website updated', meta);
+                if (req.body.logoUrl || req.body.themeColor || req.body.fontStyle) {
+                    await activityService.recordBusinessActivity(id, 'BRANDING_UPDATED', 'Branding updated', {
+                        logoUrl: req.body.logoUrl ?? null,
+                        themeColor: req.body.themeColor ?? null,
+                        fontStyle: req.body.fontStyle ?? null
+                    });
+                }
+                return success(res, 'Business updated', updated);
     } catch (error: any) {
         return fail(res, error.message || 'Unable to update business', error.status || 400);
     }

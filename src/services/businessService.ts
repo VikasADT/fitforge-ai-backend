@@ -12,6 +12,7 @@ export type CreateBusinessPayload = {
   subdomain?: string;
   heroTitle?: string;
   heroSubtitle?: string;
+  heroImageUrl?: string;
   aboutText?: string;
   services?: Prisma.InputJsonValue;
   features?: Prisma.InputJsonValue;
