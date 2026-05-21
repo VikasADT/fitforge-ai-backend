@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import * as businessService from '../services/businessService';
+import * as analyticsService from '../services/analyticsService';
+import * as activityService from '../services/activityService';
 import { asyncHandler } from '../utils/asyncHandler';
 import { success, fail } from '../utils/response';
 import { AuthRequest } from '../middleware/auth';
@@ -66,6 +68,49 @@ export const updateBusiness = asyncHandler(async (req: AuthRequest, res: Respons
     } catch (error: any) {
         return fail(res, error.message || 'Unable to update business', error.status || 400);
     }
+});
+
+export const publishBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const published = await businessService.publishBusiness(id, req.user.id);
+    if (!published) return fail(res, 'Business not found', 404);
+    return success(res, 'Business published successfully', published);
+});
+
+export const unpublishBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const unpublished = await businessService.unpublishBusiness(id, req.user.id);
+    if (!unpublished) return fail(res, 'Business not found', 404);
+    return success(res, 'Business unpublished successfully', unpublished);
+});
+
+export const getBusinessAnalytics = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const analytics = await analyticsService.getBusinessDashboardAnalytics(id, req.user.id);
+    if (!analytics) return fail(res, 'Business not found', 404);
+    return success(res, 'Analytics fetched', analytics);
+});
+
+export const getBusinessAnalyticsTrends = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const trends = await analyticsService.getBusinessAnalyticsTrends(id, req.user.id);
+    if (!trends) return fail(res, 'Business not found', 404);
+    return success(res, 'Analytics trends fetched', trends);
+});
+
+export const getBusinessActivity = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) return fail(res, 'Unauthorized', 401);
+    const { id } = req.params;
+    const page = Number(req.query.page || 1);
+    const limit = Math.min(100, Number(req.query.limit || 20));
+
+    const activityFeed = await activityService.getActivityFeed(id, req.user.id, page, limit);
+    if (!activityFeed) return fail(res, 'Business not found', 404);
+    return success(res, 'Activity fetched', activityFeed);
 });
 
 export const deleteBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {

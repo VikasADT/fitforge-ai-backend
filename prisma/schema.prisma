@@ -62,20 +62,82 @@ model Business {
 
   subdomain      String?  @unique
   isActive       Boolean  @default(true)
+  isPublished    Boolean  @default(false)
+  publishedAt    DateTime?
   subscriptionStatus SubscriptionStatus @default(FREE)
   customDomain   String?
   planType       String?
+  whatsappNumber String?
+  whatsappEnabled Boolean @default(false)
+  ctaLabels      Json?
   websiteViews   Int      @default(0)
   leadCount      Int      @default(0)
+  ctaClicks      Int      @default(0)
+  membershipPlans MembershipPlan[]
+  leads          Lead[]
+  activities     BusinessActivity[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   @@index([userId])
 }
 
+model BusinessActivity {
+  id         String                 @id @default(cuid())
+  business   Business               @relation(fields: [businessId], references: [id])
+  businessId String
+  type       BusinessActivityType
+  message    String?
+  metadata   Json?
+  createdAt  DateTime               @default(now())
+
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([businessId, type])
+}
+
+model MembershipPlan {
+  id          String   @id @default(cuid())
+  business    Business @relation(fields: [businessId], references: [id])
+  businessId  String
+  name        String
+  price       Float
+  duration    Int
+  description String?
+  features    Json?
+  isPopular   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([businessId])
+}
+
+model Lead {
+  id             String   @id @default(cuid())
+  business       Business @relation(fields: [businessId], references: [id])
+  businessId     String
+  name           String
+  email          String
+  phone          String?
+  message        String?
+  interestedPlan String?
+  createdAt      DateTime @default(now())
+
+  @@index([businessId])
+}
+
 enum UserRole {
   SUPER_ADMIN
   GYM_OWNER
+}
+
+enum BusinessActivityType {
+  WEBSITE_PUBLISHED
+  WEBSITE_UNPUBLISHED
+  LEAD_SUBMITTED
+  MEMBERSHIP_CREATED
+  CTA_CLICKED
+  WEBSITE_VIEWED
 }
 
 enum SubscriptionStatus {

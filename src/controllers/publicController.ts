@@ -6,7 +6,7 @@ import * as businessService from '../services/businessService';
 export const getPublicWebsite = asyncHandler(async (req: Request, res: Response) => {
   const { subdomain } = req.params;
   const business = await businessService.getBusinessBySubdomain(subdomain);
-  if (!business || !business.isActive) {
+  if (!business || !business.isActive || !business.isPublished) {
     return fail(res, 'Website not found', 404);
   }
 
@@ -36,6 +36,9 @@ export const getPublicWebsite = asyncHandler(async (req: Request, res: Response)
     return fail(res, 'Website content not available', 404);
   }
 
+  const visitorId = req.headers['x-visitor-id'] as string | undefined;
+  await businessService.incrementWebsiteViews(business.id, visitorId);
+
   const websitePayload = {
     businessName: business.businessName,
     category: business.category,
@@ -46,10 +49,16 @@ export const getPublicWebsite = asyncHandler(async (req: Request, res: Response)
     templateId: business.templateId,
     themeColor: business.themeColor,
     fontStyle: business.fontStyle,
+    whatsapp: {
+      enabled: business.whatsappEnabled ?? false,
+      number: business.whatsappEnabled && business.whatsappNumber ? business.whatsappNumber : null
+    },
+    ctaLabels: business.ctaLabels ?? null,
     websiteContent,
     seoTitle: business.seoTitle ?? websiteContent.seoTitle,
     seoDescription: business.seoDescription ?? websiteContent.seoDescription,
-    createdAt: business.createdAt
+    createdAt: business.createdAt,
+    publishedAt: business.publishedAt
   };
 
   return success(res, 'Public website data fetched', { website: websitePayload });
