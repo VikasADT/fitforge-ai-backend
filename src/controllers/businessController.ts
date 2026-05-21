@@ -33,6 +33,29 @@ export const getUserBusinesses = asyncHandler(async (req: AuthRequest, res: Resp
         businesses
     });
 });
+
+
+export const getBusinessPreview = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+        return fail(res, 'Unauthorized', 401);
+    }
+
+    const { id } = req.params;
+
+    const business = await businessService.getBusinessByIdForUser(
+        id,
+        req.user.id
+    );
+
+    if (!business) {
+        return fail(res, 'Business not found', 404);
+    }
+
+    return success(res, 'Business preview fetched successfully', {
+        website: business
+    });
+});
+
 export const updateBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (!req.user) return fail(res, 'Unauthorized', 401);
     const { id } = req.params;

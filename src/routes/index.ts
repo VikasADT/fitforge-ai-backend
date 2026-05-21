@@ -15,6 +15,7 @@ router.use('/businesses', businessRoutes);
 
 router.use('/ai', aiRoutes);
 
+
 router.use('/upload', uploadRoutes);
 
 router.use('/public', publicRoutes);

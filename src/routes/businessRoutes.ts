@@ -6,7 +6,8 @@ import {
   getBusiness,
   updateBusiness,
   deleteBusiness,
-  getUserBusinesses
+  getUserBusinesses,
+  getBusinessPreview
 } from '../controllers/businessController';
 
 import { authMiddleware } from '../middleware/auth';
@@ -79,6 +80,13 @@ router.post(
  * GET SINGLE BUSINESS
  * GET /api/businesses/:id
  */
+
+router.get(
+  '/:id/preview',
+  authMiddleware,
+  getBusinessPreview
+);
+
 router.get('/:id', authMiddleware, getBusiness);
 
 /**
