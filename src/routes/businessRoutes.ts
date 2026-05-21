@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { body } from 'express-validator';
+
 import {
   createBusiness,
   getBusiness,
@@ -8,69 +10,136 @@ import {
 } from '../controllers/businessController';
 
 import { authMiddleware } from '../middleware/auth';
-import { body } from 'express-validator';
 import { validateRequest } from '../middleware/validate';
 
 const router = Router();
 
-// GET ALL USER BUSINESSES
-
+/**
+ * GET ALL USER BUSINESSES
+ * GET /api/businesses
+ */
 router.get('/', authMiddleware, getUserBusinesses);
 
-// CREATE BUSINESS
+/**
+ * CREATE BUSINESS
+ * POST /api/businesses
+ */
 router.post(
-  '/create',
+  '/',
   authMiddleware,
   [
-    body('businessName').notEmpty().withMessage('businessName is required'),
-    body('category').optional().isString(),
-    body('city').optional().isString(),
-    body('phone').optional().isString(),
-    body('logoUrl').optional().isURL(),
+    body('businessName')
+      .notEmpty()
+      .withMessage('businessName is required'),
+
+    body('category')
+      .optional()
+      .isString(),
+
+    body('city')
+      .optional()
+      .isString(),
+
+    body('phone')
+      .optional()
+      .isString(),
+
+    body('logoUrl')
+      .optional()
+      .isURL(),
+
     body('subdomain')
       .optional()
       .isString()
       .trim()
+      .toLowerCase()
       .isLength({ min: 3, max: 50 })
-      .matches(/^[a-z0-9-]+$/i)
-      .withMessage('subdomain must be alphanumeric and may include hyphens'),
-    body('templateId').optional().isString(),
-    body('themeColor').optional().isString(),
-    body('fontStyle').optional().isString()
+      .matches(/^[a-z0-9-]+$/)
+      .withMessage(
+        'subdomain must use lowercase letters, numbers, and hyphens only'
+      ),
+
+    body('templateId')
+      .optional()
+      .isString(),
+
+    body('themeColor')
+      .optional()
+      .isString(),
+
+    body('fontStyle')
+      .optional()
+      .isString()
   ],
   validateRequest,
   createBusiness
 );
 
-// GET SINGLE BUSINESS
+/**
+ * GET SINGLE BUSINESS
+ * GET /api/businesses/:id
+ */
 router.get('/:id', authMiddleware, getBusiness);
 
-// UPDATE BUSINESS
+/**
+ * UPDATE BUSINESS
+ * PUT /api/businesses/:id
+ */
 router.put(
   '/:id',
   authMiddleware,
   [
-    body('businessName').optional().isString(),
-    body('category').optional().isString(),
-    body('city').optional().isString(),
-    body('phone').optional().isString(),
-    body('logoUrl').optional().isURL(),
+    body('businessName')
+      .optional()
+      .isString(),
+
+    body('category')
+      .optional()
+      .isString(),
+
+    body('city')
+      .optional()
+      .isString(),
+
+    body('phone')
+      .optional()
+      .isString(),
+
+    body('logoUrl')
+      .optional()
+      .isURL(),
+
     body('subdomain')
       .optional()
       .isString()
       .trim()
+      .toLowerCase()
       .isLength({ min: 3, max: 50 })
-      .matches(/^[a-z0-9-]+$/i)
-      .withMessage('subdomain must be alphanumeric and may include hyphens'),
-    body('templateId').optional().isString(),
-    body('themeColor').optional().isString(),
-    body('fontStyle').optional().isString()
+      .matches(/^[a-z0-9-]+$/)
+      .withMessage(
+        'subdomain must use lowercase letters, numbers, and hyphens only'
+      ),
+
+    body('templateId')
+      .optional()
+      .isString(),
+
+    body('themeColor')
+      .optional()
+      .isString(),
+
+    body('fontStyle')
+      .optional()
+      .isString()
   ],
   validateRequest,
   updateBusiness
 );
 
-// DELETE BUSINESS
+/**
+ * DELETE BUSINESS
+ * DELETE /api/businesses/:id
+ */
 router.delete('/:id', authMiddleware, deleteBusiness);
 
 export default router;
