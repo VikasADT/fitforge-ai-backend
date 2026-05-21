@@ -5,10 +5,11 @@ import prisma from '../prisma/client';
 import { fail } from '../utils/response';
 
 export interface AuthRequest extends Request {
-  user?: { id: string; email: string };
-  body: any;
-  params: any;
-  headers: any;
+  user?: {
+    id: string;
+    email: string;
+    role?: string;
+  };
   file?: any;
   files?: any;
 }
