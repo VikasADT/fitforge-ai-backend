@@ -14,6 +14,7 @@ import { validateRequest } from '../middleware/validate';
 const router = Router();
 
 // GET ALL USER BUSINESSES
+
 router.get('/', authMiddleware, getUserBusinesses);
 
 // CREATE BUSINESS

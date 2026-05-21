@@ -14,15 +14,7 @@ export const createBusiness = asyncHandler(async (req: AuthRequest, res: Respons
     }
     return success(res, 'Business created successfully', business, 201);
 });
-export const getUserBusinesses = asyncHandler(async (req: AuthRequest, res: Response) => {
-    if (!req.user) {
-        return fail(res, 'Unauthorized', 401);
-    }
 
-    const businesses = await businessService.getBusinessesByUser(req.user.id);
-
-    return success(res, 'Businesses fetched successfully', businesses);
-});
 export const getBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (!req.user) return fail(res, 'Unauthorized', 401);
     const { id } = req.params;
@@ -30,7 +22,17 @@ export const getBusiness = asyncHandler(async (req: AuthRequest, res: Response) 
     if (!business) return fail(res, 'Business not found', 404);
     return success(res, 'Business fetched', business);
 });
+export const getUserBusinesses = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+        return fail(res, 'Unauthorized', 401);
+    }
 
+    const businesses = await businessService.getUserBusinesses(req.user.id);
+
+    return success(res, 'Businesses fetched successfully', {
+        businesses
+    });
+});
 export const updateBusiness = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (!req.user) return fail(res, 'Unauthorized', 401);
     const { id } = req.params;

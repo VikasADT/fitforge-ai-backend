@@ -90,7 +90,8 @@ export const updateBusiness = async (
     return prisma.business.update({ where: { id }, data });
 };
 
-export const getBusinessesByUser = async (userId: string) => {
+
+export const getUserBusinesses = async (userId: string) => {
     return prisma.business.findMany({
         where: {
             userId
@@ -100,7 +101,6 @@ export const getBusinessesByUser = async (userId: string) => {
         }
     });
 };
-
 export const deleteBusiness = async (id: string, userId: string) => {
     const result = await prisma.business.deleteMany({ where: { id, userId } });
     return result.count > 0;
