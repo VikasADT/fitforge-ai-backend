@@ -21,12 +21,18 @@ router.post(
   '/create',
   authMiddleware,
   [
-    body('businessName').notEmpty(),
+    body('businessName').notEmpty().withMessage('businessName is required'),
     body('category').optional().isString(),
     body('city').optional().isString(),
     body('phone').optional().isString(),
     body('logoUrl').optional().isURL(),
-    body('subdomain').optional().isString(),
+    body('subdomain')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ min: 3, max: 50 })
+      .matches(/^[a-z0-9-]+$/i)
+      .withMessage('subdomain must be alphanumeric and may include hyphens'),
     body('templateId').optional().isString(),
     body('themeColor').optional().isString(),
     body('fontStyle').optional().isString()
@@ -39,7 +45,29 @@ router.post(
 router.get('/:id', authMiddleware, getBusiness);
 
 // UPDATE BUSINESS
-router.put('/:id', authMiddleware, updateBusiness);
+router.put(
+  '/:id',
+  authMiddleware,
+  [
+    body('businessName').optional().isString(),
+    body('category').optional().isString(),
+    body('city').optional().isString(),
+    body('phone').optional().isString(),
+    body('logoUrl').optional().isURL(),
+    body('subdomain')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ min: 3, max: 50 })
+      .matches(/^[a-z0-9-]+$/i)
+      .withMessage('subdomain must be alphanumeric and may include hyphens'),
+    body('templateId').optional().isString(),
+    body('themeColor').optional().isString(),
+    body('fontStyle').optional().isString()
+  ],
+  validateRequest,
+  updateBusiness
+);
 
 // DELETE BUSINESS
 router.delete('/:id', authMiddleware, deleteBusiness);

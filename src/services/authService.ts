@@ -17,7 +17,7 @@ export const registerUser = async ({
   });
 
   if (existing) {
-    throw new Error('Email already in use');
+    return null;
   }
 
   const hash = await bcrypt.hash(password, 10);
@@ -33,6 +33,19 @@ export const registerUser = async ({
   const { password: _password, ...safeUser } = user;
 
   return safeUser;
+};
+
+export const generateToken = (user: { id: string; email: string }) => {
+  return jwt.sign(
+    {
+      userId: user.id,
+      email: user.email
+    },
+    config.jwtSecret as jwt.Secret,
+    {
+      expiresIn: config.jwtExpiresIn as jwt.SignOptions['expiresIn']
+    }
+  );
 };
 
 export const loginUser = async ({
@@ -56,16 +69,5 @@ export const loginUser = async ({
     return null;
   }
 
-  const token = jwt.sign(
-    {
-      userId: user.id,
-      email: user.email
-    },
-    config.jwtSecret,
-    {
-      expiresIn: '7d'
-    }
-  );
-
-  return token;
+  return generateToken({ id: user.id, email: user.email });
 };

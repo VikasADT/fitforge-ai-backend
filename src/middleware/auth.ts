@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import prisma from '../prisma/client';
+import { fail } from '../utils/response';
 
 export interface AuthRequest extends Request {
   user?: { id: string; email: string };
@@ -22,21 +23,25 @@ interface TokenPayload {
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authorization = req.headers.authorization;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+    return fail(res, 'Unauthorized', 401);
   }
 
   const token = authorization.split(' ')[1];
 
   try {
     const payload = jwt.verify(token, config.jwtSecret) as TokenPayload;
+    if (!payload || typeof payload.userId !== 'string') {
+      return fail(res, 'Unauthorized', 401);
+    }
+
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return fail(res, 'Unauthorized', 401);
     }
 
     req.user = { id: user.id, email: user.email };
     next();
-  } catch (error) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  } catch (_error) {
+    return fail(res, 'Unauthorized', 401);
   }
 };

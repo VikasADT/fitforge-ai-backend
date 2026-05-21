@@ -25,6 +25,16 @@ export type CreateBusinessPayload = {
 };
 
 export const createBusiness = async (data: CreateBusinessPayload) => {
+    if (data.subdomain) {
+        const existing = await prisma.business.findUnique({
+            where: { subdomain: data.subdomain }
+        });
+
+        if (existing) {
+            return null;
+        }
+    }
+
     const created = await prisma.business.create({
         data: {
             userId: data.userId,
@@ -53,15 +63,31 @@ export const createBusiness = async (data: CreateBusinessPayload) => {
 
 export const getBusinessById = async (id: string) => prisma.business.findUnique({ where: { id } });
 
+export const getBusinessByIdForUser = async (id: string, userId: string) =>
+    prisma.business.findFirst({ where: { id, userId } });
+
 export const getBusinessBySubdomain = async (subdomain: string) => prisma.business.findUnique({ where: { subdomain } });
 
-export const updateBusiness = async (id: string, data: Partial<Omit<CreateBusinessPayload, 'userId'>>) => {
-    try {
-        const updated = await prisma.business.update({ where: { id }, data });
-        return updated;
-    } catch (err) {
+export const updateBusiness = async (
+    id: string,
+    userId: string,
+    data: Partial<Omit<CreateBusinessPayload, 'userId'>>
+) => {
+    const business = await prisma.business.findUnique({ where: { id } });
+    if (!business || business.userId !== userId) {
         return null;
     }
+
+    if (data.subdomain && data.subdomain !== business.subdomain) {
+        const existing = await prisma.business.findUnique({ where: { subdomain: data.subdomain } });
+        if (existing) {
+            const error: any = new Error('Subdomain already in use');
+            error.status = 400;
+            throw error;
+        }
+    }
+
+    return prisma.business.update({ where: { id }, data });
 };
 
 export const getBusinessesByUser = async (userId: string) => {
@@ -74,4 +100,8 @@ export const getBusinessesByUser = async (userId: string) => {
         }
     });
 };
-export const deleteBusiness = async (id: string) => prisma.business.delete({ where: { id } });
+
+export const deleteBusiness = async (id: string, userId: string) => {
+    const result = await prisma.business.deleteMany({ where: { id, userId } });
+    return result.count > 0;
+};

@@ -8,8 +8,9 @@ import { AuthRequest } from '../middleware/auth';
 export const register = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     const user = await authService.registerUser({ name, email, password });
-    if (!user) return fail(res, 'Registration failed');
-    return success(res, 'User registered', { user });
+    if (!user) return fail(res, 'Email already in use', 400);
+    const token = authService.generateToken({ id: user.id, email: user.email });
+    return success(res, 'User registered', { user, token }, 201);
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
