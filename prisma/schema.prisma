@@ -64,6 +64,7 @@ model Business {
   isActive           Boolean            @default(true)
   isPublished        Boolean            @default(false)
   publishedAt        DateTime?
+  publishState       BusinessPublishState @default(DRAFT)
   subscriptionStatus SubscriptionStatus @default(FREE)
   customDomain       String?
   planType           String?
@@ -148,6 +149,9 @@ enum UserRole {
 enum BusinessActivityType {
   WEBSITE_PUBLISHED
   WEBSITE_UNPUBLISHED
+  WEBSITE_PREVIEWED
+  SEO_UPDATED
+  CMS_COMPLETED
   LEAD_SUBMITTED
   MEMBERSHIP_CREATED
   CTA_CLICKED
@@ -171,4 +175,10 @@ enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
   CANCELED
+}
+
+enum BusinessPublishState {
+  DRAFT
+  READY
+  PUBLISHED
 }

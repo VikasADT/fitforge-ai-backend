@@ -10,6 +10,7 @@ import {
   getBusinessPreview,
   publishBusiness,
   unpublishBusiness,
+  getBusinessHealth,
   getBusinessAnalytics,
   getBusinessAnalyticsTrends,
   getBusinessActivity
@@ -158,6 +159,7 @@ router.get(
 
 router.post('/:id/publish', authMiddleware, publishBusiness);
 router.post('/:id/unpublish', authMiddleware, unpublishBusiness);
+router.get('/:id/health', authMiddleware, getBusinessHealth);
 
 router.get('/:id/memberships', authMiddleware, getMemberships);
 router.post(
