@@ -60,20 +60,24 @@ model Business {
   themeColor String?
   fontStyle  String?
 
-  subdomain          String?            @unique
-  isActive           Boolean            @default(true)
-  isPublished        Boolean            @default(false)
+  subdomain          String?              @unique
+  isActive           Boolean              @default(true)
+  isPublished        Boolean              @default(false)
   publishedAt        DateTime?
   publishState       BusinessPublishState @default(DRAFT)
-  subscriptionStatus SubscriptionStatus @default(FREE)
+  subscriptionStatus SubscriptionStatus   @default(FREE)
   customDomain       String?
   planType           String?
   whatsappNumber     String?
-  whatsappEnabled    Boolean            @default(false)
+  whatsappEnabled    Boolean              @default(false)
+  upiId              String?
+  paymentInstructions String?
+  acceptsCashPayments Boolean             @default(false)
+  acceptsUpiPayments Boolean             @default(false)
   ctaLabels          Json?
-  websiteViews       Int                @default(0)
-  leadCount          Int                @default(0)
-  ctaClicks          Int                @default(0)
+  websiteViews       Int                  @default(0)
+  leadCount          Int                  @default(0)
+  ctaClicks          Int                  @default(0)
   media              BusinessMedia[]
   membershipPlans    MembershipPlan[]
   leads              Lead[]
@@ -112,38 +116,50 @@ model BusinessActivity {
 }
 
 model MembershipPlan {
-  id          String   @id @default(cuid())
-  business    Business @relation(fields: [businessId], references: [id])
-  businessId  String
-  name        String
-  price       Float
-  duration    Int
-  description String?
-  features    Json?
-  isPopular   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String                 @id @default(cuid())
+  business     Business               @relation(fields: [businessId], references: [id])
+  businessId   String
+  name         String
+  price        Float
+  duration     Int
+  description  String?
+  features     Json?
+  isPopular    Boolean                @default(false)
+  paymentModes MembershipPaymentMode[] @default([])
+  leads        Lead[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 
   @@index([businessId])
 }
 
 model Lead {
-  id             String   @id @default(cuid())
-  business       Business @relation(fields: [businessId], references: [id])
-  businessId     String
-  name           String
-  email          String
-  phone          String?
-  message        String?
-  interestedPlan String?
-  createdAt      DateTime @default(now())
+  id                   String                 @id @default(cuid())
+  business             Business               @relation(fields: [businessId], references: [id])
+  businessId           String
+  membership           MembershipPlan?        @relation(fields: [membershipId], references: [id])
+  membershipId         String?
+  name                 String
+  email                String
+  phone                String?
+  message              String?
+  interestedPlan       String?
+  preferredPaymentMode MembershipPaymentMode?
+  createdAt            DateTime               @default(now())
 
   @@index([businessId])
+  @@index([membershipId])
 }
 
 enum UserRole {
   SUPER_ADMIN
   GYM_OWNER
+}
+
+enum MembershipPaymentMode {
+  CASH
+  UPI
+  CONTACT_OWNER
 }
 
 enum BusinessActivityType {
@@ -160,6 +176,9 @@ enum BusinessActivityType {
   MEDIA_UPLOADED
   MEDIA_DELETED
   BRANDING_UPDATED
+  MEMBERSHIP_INQUIRY
+  PAYMENT_SETTINGS_UPDATED
+  PAYMENT_CTA_CLICKED
 }
 
 enum MediaType {

@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import * as activityService from './activityService';
 import { config } from '../config';
 
+type PaymentMode = 'CASH' | 'UPI' | 'CONTACT_OWNER';
+
 export type PublishValidationResult = {
   ready: boolean;
   missing: string[];
@@ -23,6 +25,15 @@ const normalizeJsonArray = (value: any) => {
   if (Array.isArray(value)) return value;
   if (value == null) return [];
   return [];
+};
+
+const normalizePaymentModes = (value: unknown): PaymentMode[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const validModes = new Set<PaymentMode>(['CASH', 'UPI', 'CONTACT_OWNER']);
+  return value.filter((item): item is PaymentMode => validModes.has(item as PaymentMode));
 };
 
 const getValidationValue = (business: BusinessValidationInput, field: string) => {
@@ -97,12 +108,23 @@ export type CreateBusinessPayload = {
   fontStyle?: string;
   whatsappNumber?: string;
   whatsappEnabled?: boolean;
+  upiId?: string | null;
+  paymentInstructions?: string | null;
+  acceptsCashPayments?: boolean;
+  acceptsUpiPayments?: boolean;
   ctaLabels?: Prisma.InputJsonValue;
 };
 
 export type UpdateBusinessPayload = Partial<Omit<CreateBusinessPayload, 'userId'>> & {
   isPublished?: boolean;
   publishedAt?: Date | null;
+};
+
+export type BusinessPaymentSettingsPayload = {
+  upiId?: string | null;
+  paymentInstructions?: string | null;
+  acceptsCashPayments?: boolean;
+  acceptsUpiPayments?: boolean;
 };
 
 export const createBusiness = async (data: CreateBusinessPayload) => {
@@ -141,6 +163,10 @@ export const createBusiness = async (data: CreateBusinessPayload) => {
       fontStyle: data.fontStyle,
       whatsappNumber: data.whatsappNumber,
       whatsappEnabled: data.whatsappEnabled,
+      upiId: data.upiId ?? null,
+      paymentInstructions: data.paymentInstructions ?? null,
+      acceptsCashPayments: data.acceptsCashPayments ?? false,
+      acceptsUpiPayments: data.acceptsUpiPayments ?? false,
       ctaLabels: data.ctaLabels ? data.ctaLabels : undefined,
       publishState: publishValidation.state
     }
@@ -221,7 +247,11 @@ export const updateBusiness = async (
       features: data.features === undefined ? undefined : data.features,
       testimonials: data.testimonials === undefined ? undefined : data.testimonials,
       websiteContent: data.websiteContent === undefined ? undefined : data.websiteContent,
-      ctaLabels: data.ctaLabels === undefined ? undefined : data.ctaLabels
+      ctaLabels: data.ctaLabels === undefined ? undefined : data.ctaLabels,
+      upiId: data.upiId === undefined ? undefined : data.upiId,
+      paymentInstructions: data.paymentInstructions === undefined ? undefined : data.paymentInstructions,
+      acceptsCashPayments: data.acceptsCashPayments === undefined ? undefined : data.acceptsCashPayments,
+      acceptsUpiPayments: data.acceptsUpiPayments === undefined ? undefined : data.acceptsUpiPayments
     }
   });
 
@@ -231,6 +261,36 @@ export const updateBusiness = async (
       missing: publishValidation.missing
     });
   }
+
+  return updated;
+};
+
+export const updatePaymentSettings = async (
+  id: string,
+  userId: string,
+  data: BusinessPaymentSettingsPayload
+) => {
+  const business = await prisma.business.findFirst({ where: { id, userId } });
+  if (!business) {
+    return null;
+  }
+
+  const updated = await prisma.business.update({
+    where: { id },
+    data: {
+      upiId: data.upiId === undefined ? undefined : data.upiId,
+      paymentInstructions: data.paymentInstructions === undefined ? undefined : data.paymentInstructions,
+      acceptsCashPayments: data.acceptsCashPayments === undefined ? undefined : data.acceptsCashPayments,
+      acceptsUpiPayments: data.acceptsUpiPayments === undefined ? undefined : data.acceptsUpiPayments
+    }
+  });
+
+  await activityService.recordBusinessActivity(id, 'PAYMENT_SETTINGS_UPDATED', 'Payment settings updated', {
+    upiId: updated.upiId ?? null,
+    paymentInstructions: updated.paymentInstructions ?? null,
+    acceptsCashPayments: updated.acceptsCashPayments,
+    acceptsUpiPayments: updated.acceptsUpiPayments
+  });
 
   return updated;
 };

@@ -49,43 +49,90 @@ export const getBusinessDashboardAnalytics = async (businessId: string, userId: 
     return null;
   }
 
-  const [latestLead, latestActivity, totalMemberships, recentActivityCount, uniqueVisitorsResult] =
-    await Promise.all([
-      prisma.lead.findFirst({
-        where: { businessId },
-        orderBy: { createdAt: 'desc' },
-        select: { createdAt: true }
-      }),
-      prisma.businessActivity.findFirst({
-        where: { businessId },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          type: true,
-          message: true,
-          metadata: true,
-          createdAt: true
+  const [
+    latestLead,
+    latestActivity,
+    totalMemberships,
+    recentActivityCount,
+    uniqueVisitorsResult,
+    totalMembershipInquiries,
+    paymentCtaClicks,
+    whatsappMembershipClicks,
+    cashPreferenceSelections,
+    upiPreferenceSelections
+  ] = await Promise.all([
+    prisma.lead.findFirst({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
+    }),
+    prisma.businessActivity.findFirst({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        type: true,
+        message: true,
+        metadata: true,
+        createdAt: true
+      }
+    }),
+    prisma.membershipPlan.count({ where: { businessId } }),
+    prisma.businessActivity.count({
+      where: {
+        businessId,
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         }
-      }),
-      prisma.membershipPlan.count({ where: { businessId } }),
-      prisma.businessActivity.count({
-        where: {
-          businessId,
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          }
+      }
+    }),
+    prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(DISTINCT (metadata->>'visitorId')) AS count
+      FROM "BusinessActivity"
+      WHERE "businessId" = ${businessId}
+        AND "type" = 'WEBSITE_VIEWED'
+        AND metadata ? 'visitorId'
+    `,
+    prisma.lead.count({
+      where: {
+        businessId,
+        membershipId: {
+          not: null
         }
-      }),
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(DISTINCT (metadata->>'visitorId')) AS count
-        FROM "BusinessActivity"
-        WHERE "businessId" = ${businessId}
-          AND "type" = 'WEBSITE_VIEWED'
-          AND metadata ? 'visitorId'
-      `
-    ]);
+      }
+    }),
+    prisma.businessActivity.count({
+      where: {
+        businessId,
+        type: 'PAYMENT_CTA_CLICKED' as any
+      }
+    }),
+    prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(*) AS count
+      FROM "BusinessActivity"
+      WHERE "businessId" = ${businessId}
+        AND "type" = 'CTA_CLICKED'
+        AND metadata->>'ctaType' IN ('WHATSAPP_MEMBERSHIP_CLICK', 'WHATSAPP_CLICK')
+    `,
+    prisma.lead.count({
+      where: {
+        businessId,
+        preferredPaymentMode: 'CASH'
+      }
+    }),
+    prisma.lead.count({
+      where: {
+        businessId,
+        preferredPaymentMode: 'UPI'
+      }
+    })
+  ]);
 
   const uniqueVisitors = Number(uniqueVisitorsResult?.[0]?.count ?? 0);
+  const paymentCtaCount = Number(paymentCtaClicks);
+  const whatsappClicks = Number(whatsappMembershipClicks?.[0]?.count ?? 0);
+  const cashSelections = Number(cashPreferenceSelections);
+  const upiSelections = Number(upiPreferenceSelections);
   const conversionRate = business.websiteViews > 0 ? Number(((business.leadCount / business.websiteViews) * 100).toFixed(2)) : 0;
   const leadConversionStatus = business.websiteViews === 0
     ? 'none'
@@ -119,6 +166,11 @@ export const getBusinessDashboardAnalytics = async (businessId: string, userId: 
     totalLeads: business.leadCount,
     totalCtaClicks: business.ctaClicks,
     totalMemberships,
+    totalMembershipInquiries: Number(totalMembershipInquiries),
+    paymentCtaClicks: paymentCtaCount,
+    whatsappMembershipClicks: whatsappClicks,
+    cashPreferenceSelections: cashSelections,
+    upiPreferenceSelections: upiSelections,
     uniqueVisitors,
     isPublished: business.isPublished,
     createdAt: business.createdAt,

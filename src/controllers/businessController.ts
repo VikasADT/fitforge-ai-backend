@@ -76,6 +76,12 @@ export const getBusinessPreview = asyncHandler(async (req: AuthRequest, res: Res
                 number: business.whatsappEnabled && business.whatsappNumber ? business.whatsappNumber : null
             },
             ctaLabels: business.ctaLabels ?? null,
+            paymentSettings: {
+                upiId: business.upiId ?? null,
+                paymentInstructions: business.paymentInstructions ?? null,
+                acceptsCashPayments: business.acceptsCashPayments ?? false,
+                acceptsUpiPayments: business.acceptsUpiPayments ?? false
+            },
             websiteContent: business.websiteContent ?? {
                 heroTitle: business.heroTitle,
                 heroSubtitle: business.heroSubtitle,

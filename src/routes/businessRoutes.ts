@@ -15,6 +15,7 @@ import {
   getBusinessAnalyticsTrends,
   getBusinessActivity
 } from '../controllers/businessController';
+import { createPaymentSettings, updatePaymentSettings } from '../controllers/paymentSettingsController';
 import { uploadBusinessMedia, listBusinessMedia } from '../controllers/mediaController';
 import { userUploadLimiter } from '../middleware/rateLimiter';
 import { uploadSingle } from '../middleware/upload';
@@ -122,6 +123,25 @@ router.post(
       .optional()
       .isObject(),
 
+    body('upiId')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim()
+      .isLength({ max: 100 }),
+
+    body('paymentInstructions')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim(),
+
+    body('acceptsCashPayments')
+      .optional()
+      .isBoolean(),
+
+    body('acceptsUpiPayments')
+      .optional()
+      .isBoolean(),
+
     body('services')
       .optional()
       .isArray()
@@ -157,6 +177,54 @@ router.get(
   getBusinessPreview
 );
 
+router.post(
+  '/:id/payment-settings',
+  authMiddleware,
+  [
+    body('upiId')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim()
+      .isLength({ max: 100 }),
+    body('paymentInstructions')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim(),
+    body('acceptsCashPayments')
+      .optional()
+      .isBoolean(),
+    body('acceptsUpiPayments')
+      .optional()
+      .isBoolean()
+  ],
+  validateRequest,
+  createPaymentSettings
+);
+
+router.put(
+  '/:id/payment-settings',
+  authMiddleware,
+  [
+    body('upiId')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim()
+      .isLength({ max: 100 }),
+    body('paymentInstructions')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim(),
+    body('acceptsCashPayments')
+      .optional()
+      .isBoolean(),
+    body('acceptsUpiPayments')
+      .optional()
+      .isBoolean()
+  ],
+  validateRequest,
+  updatePaymentSettings
+);
+
 router.post('/:id/publish', authMiddleware, publishBusiness);
 router.post('/:id/unpublish', authMiddleware, unpublishBusiness);
 router.get('/:id/health', authMiddleware, getBusinessHealth);
@@ -186,7 +254,15 @@ router.post(
       .withMessage('Membership features must be an array'),
     body('isPopular')
       .optional()
-      .isBoolean()
+      .isBoolean(),
+    body('paymentModes')
+      .optional()
+      .isArray()
+      .withMessage('paymentModes must be an array'),
+    body('paymentModes.*')
+      .optional()
+      .isIn(['CASH', 'UPI', 'CONTACT_OWNER'])
+      .withMessage('paymentModes must contain only CASH, UPI, or CONTACT_OWNER')
   ],
   validateRequest,
   createMembership
@@ -215,7 +291,15 @@ router.put(
       .withMessage('Membership features must be an array'),
     body('isPopular')
       .optional()
-      .isBoolean()
+      .isBoolean(),
+    body('paymentModes')
+      .optional()
+      .isArray()
+      .withMessage('paymentModes must be an array'),
+    body('paymentModes.*')
+      .optional()
+      .isIn(['CASH', 'UPI', 'CONTACT_OWNER'])
+      .withMessage('paymentModes must contain only CASH, UPI, or CONTACT_OWNER')
   ],
   validateRequest,
   updateMembership
@@ -364,6 +448,25 @@ router.put(
     body('ctaLabels')
       .optional()
       .isObject(),
+
+    body('upiId')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim()
+      .isLength({ max: 100 }),
+
+    body('paymentInstructions')
+      .optional({ nullable: true, checkFalsy: true })
+      .isString()
+      .trim(),
+
+    body('acceptsCashPayments')
+      .optional()
+      .isBoolean(),
+
+    body('acceptsUpiPayments')
+      .optional()
+      .isBoolean(),
 
     body('services')
       .optional()

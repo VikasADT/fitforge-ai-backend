@@ -12,6 +12,14 @@ export const createPublicLead = asyncHandler(async (req: Request, res: Response)
   return success(res, 'Lead submitted successfully', lead, 201);
 });
 
+export const createMembershipInquiry = asyncHandler(async (req: Request, res: Response) => {
+  const { subdomain } = req.params;
+  const lead = await leadService.createMembershipInquiry(subdomain, req.body);
+  if (!lead) return fail(res, 'Website not available', 404);
+
+  return success(res, 'Membership inquiry submitted successfully', lead, 201);
+});
+
 export const trackPublicCta = asyncHandler(async (req: Request, res: Response) => {
   const { subdomain } = req.params;
   const ctaType = req.body.ctaType;

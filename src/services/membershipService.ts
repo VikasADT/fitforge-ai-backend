@@ -1,5 +1,5 @@
 import prisma from '../prisma/client';
-import { Prisma } from '@prisma/client';
+import { Prisma, MembershipPaymentMode } from '@prisma/client';
 import * as activityService from './activityService';
 
 export type CreateMembershipPayload = {
@@ -10,6 +10,7 @@ export type CreateMembershipPayload = {
   description?: string;
   features?: Prisma.InputJsonValue;
   isPopular?: boolean;
+  paymentModes?: MembershipPaymentMode[];
 };
 
 export type UpdateMembershipPayload = Partial<Omit<CreateMembershipPayload, 'businessId'>>;
@@ -40,7 +41,8 @@ export const createMembership = async (payload: CreateMembershipPayload, userId:
       duration: payload.duration,
       description: payload.description,
       features: payload.features ? payload.features : undefined,
-      isPopular: payload.isPopular ?? false
+      isPopular: payload.isPopular ?? false,
+      paymentModes: payload.paymentModes ?? []
     }
   });
 
@@ -51,7 +53,8 @@ export const createMembership = async (payload: CreateMembershipPayload, userId:
     {
       name: payload.name,
       price: payload.price,
-      duration: payload.duration
+      duration: payload.duration,
+      paymentModes: payload.paymentModes ?? []
     }
   );
 
@@ -74,7 +77,10 @@ export const updateMembership = async (id: string, userId: string, data: UpdateM
 
   return prisma.membershipPlan.update({
     where: { id },
-    data
+    data: {
+      ...data,
+      paymentModes: data.paymentModes === undefined ? undefined : data.paymentModes
+    }
   });
 };
 
